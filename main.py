@@ -28,15 +28,20 @@ try:
     
     print("Navigating to Incredible Offers...")
     bot.go_to_incredible_offers()
-    print("Type the desired discount percentage amount.")
-    discount = input()
+    print("Type the desired discount percentage amount :")
+    
+    n = int(input())
+
+    
     print("Starting product scan and filtering...")
-    bot.scroll_and_flter(discount)
+    bot.scroll_and_flter(discount=n)
     
     print("Proceeding to checkout...")
     bot.go_to_checkout()
     bot.compelite_shopping()
-    bot.login_user
+    bot.login_user()
+    bot.admit_by_code()
+    
     
 except Exception as e:
     print("An error occurred during execution:")

@@ -17,18 +17,18 @@ class Digikalabot:
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", all_clik)
         all_clik.click()
         self.wait.until(EC.url_contains("incredible-offers"))
-        print("yes👌")
+        print("yes")
         
-    def scroll_and_flter(self, discount=90):
+    def scroll_and_flter(self, discount =90 ):
         import random
         
         curren_p = 0
         last_p = self.driver.execute_script("return document.body.scrollHeight")
         visited_products = set()
-        
+        count = 0
         while curren_p < last_p:
             self.driver.execute_script(f"window.scrollTo(0, {curren_p});")
-            # ۱. افزایش زمان انتظار برای لود شدن کامل آیتم‌های جدید دیجی‌کالا
+            
             time.sleep(0.5) 
             
             discount_badges = self.driver.find_elements(By.CSS_SELECTOR, "[data-testid='price-discount-percent']")
@@ -49,6 +49,7 @@ class Digikalabot:
                     
                     if discount_val >= discount:
                         print(f" we find {discount_val}٪")
+                        count+=1
                         
                         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", badge)
                         time.sleep(1)
@@ -60,7 +61,7 @@ class Digikalabot:
                         
                         print(" back to last page")
                         self.driver.back()
-                        time.sleep(3.5) # فرصت بیشتر به صفحه بعد از بازگشت برای بازسازی ساختار
+                        time.sleep(3.5) 
                         
                         product_found_and_clicked = True
                         break
@@ -71,12 +72,21 @@ class Digikalabot:
             if product_found_and_clicked:
                 continue
                 
-            # ۲. کوتاه‌تر کردن گام‌های اسکرول (مثلاً بین ۲۵۰ تا ۴۵۰ پیکسل) برای بالا بردن دقت اسکن
+            
             scroll_step = random.randint(250, 450)
             curren_p += scroll_step
             last_p = self.driver.execute_script("return document.body.scrollHeight")
             
         print("scann done")
+        
+        
+        if(count==0):
+            print("nothing found")
+            self.driver.quit()
+            return
+            
+            
+        
         print(" back to last page")
         self.driver.back()
         time.sleep(3.5)
@@ -128,7 +138,7 @@ class Digikalabot:
             try:
                 add_button = wait.until(EC.presence_of_element_located(locator))
                 if add_button:
-                    print(f"✅ find it Successfully {locator}")
+                    print(f" find it Successfully {locator}")
                     break
             except:
                 continue
@@ -142,7 +152,7 @@ class Digikalabot:
             time.sleep(0.5)
             
             self.driver.execute_script("arguments[0].click();", add_button)
-            print("🎯  product add succussfully")
+            print("  product add succussfully")
             return True
         except Exception as e:
             print(f"ERROR {e}")
@@ -171,5 +181,16 @@ class Digikalabot:
             login_btn = self.wait.until(EC.element_to_be_clickable((By.ID,"dk-login")))
             login_btn.click()
         except Exception as e:
-            print(f"❌ Error in login_user: {e}")
+            print(f"Error in login_user: {e}")
             return False
+    def admit_by_code(self):
+        print("\n" + "="*40)
+        print("please enter the code that Digikala send to you:")
+        code = input()
+        input_code = self.wait.until(EC.presence_of_element_located((By.ID ,"code")))
+        input_code.click()
+        input_code.clear()
+        input_code.send_keys(code)
+        admit_btn = self.wait.until(EC.element_to_be_clickable((By.ID ,"dk-form-buttons")))
+        admit_btn.click()
+     
