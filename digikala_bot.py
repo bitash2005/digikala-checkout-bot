@@ -19,102 +19,90 @@ class Digikalabot:
         self.wait.until(EC.url_contains("incredible-offers"))
         print("yes")
         
-    def scroll_and_flter(self, discount =90 ):
+    def scroll_and_flter(self, discount=90):
         import random
+        import time
+        from selenium.webdriver.common.by import By
         
-        curren_p = 0
-        last_p = self.driver.execute_script("return document.body.scrollHeight")
         visited_products = set()
         count = 0
-        while curren_p < last_p:
-            self.driver.execute_script(f"window.scrollTo(0, {curren_p});")
+        
+        
+        product_card_selector = "a[href*='/product/']"
+        
+        while True:
             
-            time.sleep(0.5) 
+            cards = self.driver.find_elements(By.CSS_SELECTOR, product_card_selector)
             
-            discount_badges = self.driver.find_elements(By.CSS_SELECTOR, "[data-testid='price-discount-percent']")
+            new_products_in_view = False
             
-            product_found_and_clicked = False
-            for badge in discount_badges:
+            for card in cards:
                 try:
-                    product_link_element = badge.find_element(By.XPATH, "./ancestor::a")
-                    product_url = product_link_element.get_attribute("href").split("?")[0]
+                    
+                    product_url = card.get_attribute("href").split("?")[0]
+                    
                     
                     if product_url in visited_products:
                         continue
                     
+                    new_products_in_view = True
                     visited_products.add(product_url)
-
+                    
+                    
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", card)
+                    time.sleep(0.4) 
+                    
+                    
+                    badge = card.find_element(By.CSS_SELECTOR, "[data-testid='price-discount-percent']")
                     discount_text = badge.text
                     discount_val = int(''.join(filter(str.isdigit, discount_text)))
                     
                     if discount_val >= discount:
-                        print(f" we find {discount_val}٪")
-                        count+=1
+                        print(f"🔥 Found item with {discount_val}% discount!")
+                        count += 1
                         
-                        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", badge)
-                        time.sleep(1)
                         
-                        badge.click()
+                        card.click()
                         time.sleep(4) 
+                        
                         
                         self.add_to_cart()
                         
-                        print(" back to last page")
+                        print("⏮️ Going back to list page...")
                         self.driver.back()
-                        time.sleep(3.5) 
                         
-                        product_found_and_clicked = True
-                        break
                         
-                except Exception as e:
+                        time.sleep(4)
+                        
+                        
+                        break 
+                        
+                except Exception:
+                    
                     continue
             
-            if product_found_and_clicked:
-                continue
+            
+            if not new_products_in_view:
                 
+                current_height = self.driver.execute_script("return document.body.scrollHeight")
+                self.driver.execute_script("window.scrollBy(0, 600);")
+                time.sleep(2)
+                new_height = self.driver.execute_script("return document.body.scrollHeight")
+                
+                if current_height == new_height:
+                    break 
             
-            scroll_step = random.randint(250, 450)
-            curren_p += scroll_step
-            last_p = self.driver.execute_script("return document.body.scrollHeight")
-            
-        print("scann done")
         
+                
+        print("✅ Scan completely done!")
         
-        if(count==0):
-            print("nothing found")
+        if count == 0:
+            print("❌ Nothing found matching your criteria.")
             self.driver.quit()
             return
-            
-            
         
-        print(" back to last page")
-        self.driver.back()
-        time.sleep(3.5)
-    
-    def go_to_checkout(self):
-        try:
-            print("moving to shopping cart icon")
-            self.driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(1)
-            
-            cart_icon_element = self.wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "[data-cro-id='header-cart']"))
-            )
-            
-            action = ActionChains(self.driver)
-            action.move_to_element(cart_icon_element).perform()
-            print("hovered yes")
-            time.sleep(2)
-            
-            cheked_btn_loc = (By.XPATH , "//div[contains(text(), 'ثبت سفارش') or contains(., 'ثبت سفارش')]/ancestor::a | //div[contains(text(), 'ثبت سفارش')]")
-            cheked_btn = self.wait.until(EC.element_to_be_clickable(cheked_btn_loc))
-            self.driver.execute_script("arguments[0].click();", cheked_btn)
-            print("Clicked on button successfully!")
-            time.sleep(3)
-            return True
-        except Exception as e:
-            print(f"Error in go_to_checkout: {e}")
-            return False
+ 
+
 
             
     def add_to_cart(self):
@@ -157,6 +145,31 @@ class Digikalabot:
         except Exception as e:
             print(f"ERROR {e}")
             return False
+    def go_to_checkout(self):
+        try:
+            print("moving to shopping cart icon")
+            self.driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(1)
+            
+            cart_icon_element = self.wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "[data-cro-id='header-cart']"))
+            )
+            
+            action = ActionChains(self.driver)
+            action.move_to_element(cart_icon_element).perform()
+            print("hovered yes")
+            time.sleep(2)
+            
+            cheked_btn_loc = (By.XPATH , "//div[contains(text(), 'ثبت سفارش') or contains(., 'ثبت سفارش')]/ancestor::a | //div[contains(text(), 'ثبت سفارش')]")
+            cheked_btn = self.wait.until(EC.element_to_be_clickable(cheked_btn_loc))
+            self.driver.execute_script("arguments[0].click();", cheked_btn)
+            print("Clicked on button successfully!")
+            time.sleep(3)
+            return True
+        except Exception as e:
+            print(f"Error in go_to_checkout: {e}")
+            return False
+
         
     def compelite_shopping(self):
         try:

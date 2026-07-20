@@ -1,3 +1,5 @@
+  
+    
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -5,6 +7,7 @@ import os
 import sys
 import traceback
 from digikala_bot import Digikalabot
+import threading
 
 if '__file__' in locals():
     c_directory = os.path.dirname(os.path.abspath(__file__))
